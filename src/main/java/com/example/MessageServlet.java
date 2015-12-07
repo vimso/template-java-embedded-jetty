@@ -32,6 +32,7 @@ public class MessageServlet extends HttpServlet {
         StringBuffer RequestBodyBuffer = new StringBuffer();
         String body;
         ObjectMapper mapper = new ObjectMapper();
+        ServletOutputStream output = resp.getOutputStream();
         
         do {
             line = requestReader.readLine();
@@ -45,8 +46,20 @@ public class MessageServlet extends HttpServlet {
         
         Message message = mapper.readValue(body, Message.class);
         messageList.add(message);
+        
+        resp.setStatus(201);
+        output.flush();
+        output.close();
     }
     
+    /**
+     *
+     * @param req
+     * @param resp
+     * @throws ServletException
+     * @throws IOException
+     */
+    @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         ServletOutputStream output = resp.getOutputStream();
         
