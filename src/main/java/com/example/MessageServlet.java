@@ -9,6 +9,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 
 /**
@@ -62,14 +64,26 @@ public class MessageServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         ServletOutputStream output = resp.getOutputStream();
+        JsonFactory messageListFactory = new JsonFactory();
         
+        JsonGenerator JGenerator = messageListFactory.createJsonGenerator(output);
+        
+        resp.setContentType("application/json");
+        
+        JGenerator.writeStartArray();
+                
         for (final Message message : messageList) {
+            JGenerator.writeStartObject();
             
-            output.write(message.getAuthor().getBytes());
-            output.write(": ".getBytes());
-            output.write(message.getMessage().getBytes());
-            output.write("\n".getBytes());
+            JGenerator.writeStringField("author", message.getAuthor());
+            JGenerator.writeStringField("message", message.getMessage());
+
+            JGenerator.writeEndObject();
         }
+        
+        JGenerator.writeEndArray();
+
+        JGenerator.close();
         
         output.flush();
         output.close();
