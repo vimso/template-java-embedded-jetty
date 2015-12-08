@@ -3,6 +3,7 @@ package com.example;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -47,6 +48,7 @@ public class MessageServlet extends HttpServlet {
         body = RequestBodyBuffer.toString();
         
         Message message = mapper.readValue(body, Message.class);
+        message.setDate(new Date());
         messageList.add(message);
         
         resp.setStatus(201);
@@ -77,6 +79,7 @@ public class MessageServlet extends HttpServlet {
             
             JGenerator.writeStringField("author", message.getAuthor());
             JGenerator.writeStringField("message", message.getMessage());
+            JGenerator.writeStringField("date", message.getDate().toString());
 
             JGenerator.writeEndObject();
         }
