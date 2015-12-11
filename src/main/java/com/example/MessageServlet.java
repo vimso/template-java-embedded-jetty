@@ -35,25 +35,29 @@ public class MessageServlet extends HttpServlet {
         StringBuffer RequestBodyBuffer = new StringBuffer();
         String body;
         ObjectMapper mapper = new ObjectMapper();
+        
         ServletOutputStream output = resp.getOutputStream();
         
-        do {
-            line = requestReader.readLine();
+        try {
+            do {
+                line = requestReader.readLine();
 
-            if (line != null) {
-                RequestBodyBuffer.append(line);
+                if (line != null) {
+                    RequestBodyBuffer.append(line);
+                }
+            } while (line != null);
+
+            body = RequestBodyBuffer.toString();
+
+            Message message = mapper.readValue(body, Message.class);
+            message.setDate(new Date());
+            messageList.add(message);
+            resp.setStatus(201);
+        } finally {
+            if (output != null) {
+                output.close();
             }
-        } while (line != null);
-        
-        body = RequestBodyBuffer.toString();
-        
-        Message message = mapper.readValue(body, Message.class);
-        message.setDate(new Date());
-        messageList.add(message);
-        
-        resp.setStatus(201);
-        output.flush();
-        output.close();
+        }
     }
     
     /**
@@ -68,27 +72,22 @@ public class MessageServlet extends HttpServlet {
         ServletOutputStream output = resp.getOutputStream();
         JsonFactory messageListFactory = new JsonFactory();
         
-        JsonGenerator JGenerator = messageListFactory.createJsonGenerator(output);
+        JsonGenerator jGenerator = messageListFactory.createJsonGenerator(output);
         
         resp.setContentType("application/json");
         
-        JGenerator.writeStartArray();
-                
+        jGenerator.writeStartArray();
+        
+        ObjectMapper maper = new ObjectMapper();
+                   
         for (final Message message : messageList) {
-            JGenerator.writeStartObject();
-            
-            JGenerator.writeStringField("author", message.getAuthor());
-            JGenerator.writeStringField("message", message.getMessage());
-            JGenerator.writeStringField("date", message.getDate().toString());
-
-            JGenerator.writeEndObject();
+            maper.writeValue(jGenerator, message);
         }
         
-        JGenerator.writeEndArray();
+        jGenerator.writeEndArray();
 
-        JGenerator.close();
+        jGenerator.close();
         
-        output.flush();
         output.close();
     }
 }
